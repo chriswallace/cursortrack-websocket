@@ -12,29 +12,33 @@ const io = socketIo(server, {
         methods: ["GET", "POST"]
     }
 });
+
 const PORT = process.env.PORT || 4001;  // Set port dynamically for Heroku
+let userEmojis = {};  // Object to store user emojis by socket id
 
 app.use(cors());  // Enable CORS for all routes
 
 io.on('connection', (socket) => {
     console.log('New client connected');
+    userEmojis[socket.id] = "😀";  // Set default emoji for new connections
 
     socket.on('emojiUpdate', (data) => {
         const { emoji } = data;
-        // Assume you have a way to associate emojis with user/socket ids
-        updateUserEmoji(socket.id, emoji);
-        io.emit('emojiUpdate', { userId: socket.id, emoji });
+        userEmojis[socket.id] = emoji;  // Update emoji
+        io.emit('emojiUpdate', { userId: socket.id, emoji });  // Broadcast update
     });
 
     socket.on('cursorMove', (data) => {
         const normalizedX = data.x / data.viewportWidth;
         const normalizedY = data.y / data.viewportHeight;
-        // Broadcast normalized positions to other clients
-        socket.broadcast.emit('cursorMove', { normalizedX, normalizedY });
+        const emoji = userEmojis[socket.id];  // Get associated emoji
+        // Broadcast normalized positions and emoji to other clients
+        socket.broadcast.emit('cursorMove', { userId: socket.id, normalizedX, normalizedY, emoji });
     });
 
     socket.on('disconnect', () => {
         console.log('Client disconnected');
+        delete userEmojis[socket.id];  // Remove emoji association on disconnect
         io.emit('cursorLeave', { id: socket.id });
     });
 });
