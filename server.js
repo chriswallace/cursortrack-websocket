@@ -19,6 +19,13 @@ app.use(cors());  // Enable CORS for all routes
 io.on('connection', (socket) => {
     console.log('New client connected');
 
+    socket.on('emojiUpdate', (data) => {
+        const { emoji } = data;
+        // Assume you have a way to associate emojis with user/socket ids
+        updateUserEmoji(socket.id, emoji);
+        io.emit('emojiUpdate', { userId: socket.id, emoji });
+    });
+
     socket.on('cursorMove', (data) => {
         const normalizedX = data.x / data.viewportWidth;
         const normalizedY = data.y / data.viewportHeight;
