@@ -20,7 +20,10 @@ io.on('connection', (socket) => {
     console.log('New client connected');
 
     socket.on('cursorMove', (data) => {
-        socket.broadcast.emit('cursorMove', data);
+        const normalizedX = data.x / data.viewportWidth;
+        const normalizedY = data.y / data.viewportHeight;
+        // Broadcast normalized positions to other clients
+        socket.broadcast.emit('cursorMove', { normalizedX, normalizedY });
     });
 
     socket.on('disconnect', () => {
