@@ -5,9 +5,15 @@ const socketIo = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
-
+const io = socketIo(server, {
+    cors: {
+        origin: "*",  // Allow all origins
+        methods: ["GET", "POST"]
+    }
+});
 const PORT = process.env.PORT || 4001;  // Set port dynamically for Heroku
+
+app.use(cors());  // Enable CORS for all routes
 
 io.on('connection', (socket) => {
     console.log('New client connected');
