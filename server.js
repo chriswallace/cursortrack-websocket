@@ -25,8 +25,13 @@ io.on('connection', (socket) => {
 
     socket.on('pageChange', (data) => {
         const { page } = data;
+        if (userPages[socket.id]) {
+            socket.leave(userPages[socket.id]);  // Leave the old room
+        }
         userPages[socket.id] = page;  // Update page
+        socket.join(page);  // Join the new room
     });
+
 
     socket.on('emojiUpdate', (data) => {
         const { emoji } = data;
