@@ -29,11 +29,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('cursorMove', (data) => {
-        const normalizedX = data.x / data.viewportWidth;
-        const normalizedY = data.y / data.viewportHeight;
-        const emoji = userEmojis[socket.id];  // Get associated emoji
-        // Broadcast normalized positions and emoji to other clients
-        socket.broadcast.emit('cursorMove', { userId: socket.id, normalizedX, normalizedY, emoji });
+        const { x, y, emoji } = data;
+        socket.broadcast.emit('cursorMove', { userId: socket.id, x, y, emoji });
     });
 
     socket.on('disconnect', () => {
