@@ -36,8 +36,10 @@ io.on('connection', (socket) => {
     socket.on('emojiUpdate', (data) => {
         const { emoji } = data;
         userEmojis[socket.id] = emoji;  // Update emoji
-        io.emit('emojiUpdate', { userId: socket.id, emoji });  // Broadcast update
+        const page = userPages[socket.id];  // Get page of sender
+        socket.broadcast.to(page).emit('emojiUpdate', { userId: socket.id, emoji });  // Broadcast update
     });
+
 
     socket.on('cursorMove', (data) => {
         const { x, y, emoji } = data;
