@@ -1,8 +1,9 @@
-// server.js
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const Filter = require('bad-words');
 
 const app = express();
 const server = http.createServer(app);
@@ -13,9 +14,19 @@ const io = socketIo(server, {
     }
 });
 
-const PORT = process.env.PORT || 4001;  // Set port dynamically for Heroku
-let userEmojis = {};  // Object to store user emojis by socket id
-let userPages = {};  // Object to store user pages by socket id
+const limiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+});
+
+const filter = new Filter();
+
+const PORT = process.env.PORT || 4001;
+let userEmojis = {};
+let userPages = {};
+
+app.use(cors());
+app.use(limiter);  // Apply rate limiting
 
 app.use(cors());  // Enable CORS for all routes
 
@@ -32,7 +43,6 @@ io.on('connection', (socket) => {
         socket.join(page);  // Join the new room
     });
 
-
     socket.on('emojiUpdate', (data) => {
         const { emoji } = data;
         userEmojis[socket.id] = emoji;  // Update emoji
@@ -45,6 +55,13 @@ io.on('connection', (socket) => {
         const page = userPages[socket.id];  // Get page of sender
         // Broadcast to all other users on the same page
         socket.broadcast.to(page).emit('cursorMove', { userId: socket.id, x, y, emoji, chatMessage, chatActive });
+    });
+
+    socket.on('newMessage', (data) => {
+        const cleanMessage = filter.clean(data.message);  // Filter out bad words
+        // Log the message for auditing purposes
+        console.log(`${socket.id} sent: ${cleanMessage}`);
+        // ... rest of your code to handle the message
     });
 
     socket.on('disconnect', () => {
