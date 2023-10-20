@@ -54,6 +54,11 @@ io.on('connection', (socket) => {
         delete userPages[socket.id];  // Remove page association on disconnect
         io.emit('cursorLeave', { id: socket.id });
     });
+
+    socket.on('newMessage', (data) => {
+        const { message } = data;
+        io.emit('newMessage', { userId: socket.id, message });
+    });
 });
 
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));  // Updated port assignment
