@@ -42,10 +42,18 @@ io.on('connection', (socket) => {
 
 
     socket.on('cursorMove', (data) => {
-        const { x, y, emoji } = data;
+        const { x, y, emoji, chatActive, chatMessage } = data;
         const page = userPages[socket.id];  // Get page of sender
+
         // Broadcast to all other users on the same page
-        socket.broadcast.to(page).emit('cursorMove', { userId: socket.id, x, y, emoji });
+        socket.broadcast.to(page).emit('cursorMove', {
+            userId: socket.id,
+            x,
+            y,
+            emoji,
+            chatActive,
+            chatMessage
+        });
     });
 
     socket.on('disconnect', () => {
@@ -55,10 +63,6 @@ io.on('connection', (socket) => {
         io.emit('cursorLeave', { id: socket.id });
     });
 
-    socket.on('newMessage', (data) => {
-        const { message } = data;
-        io.emit('newMessage', { userId: socket.id, message });
-    });
 });
 
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));  // Updated port assignment
