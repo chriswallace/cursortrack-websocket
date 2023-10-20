@@ -40,20 +40,11 @@ io.on('connection', (socket) => {
         socket.broadcast.to(page).emit('emojiUpdate', { userId: socket.id, emoji });  // Broadcast update
     });
 
-
     socket.on('cursorMove', (data) => {
-        const { x, y, emoji, chatActive, chatMessage } = data;
+        const { x, y, emoji, chatMessage, chatActive } = data;
         const page = userPages[socket.id];  // Get page of sender
-
         // Broadcast to all other users on the same page
-        socket.broadcast.to(page).emit('cursorMove', {
-            userId: socket.id,
-            x,
-            y,
-            emoji,
-            chatActive,
-            chatMessage
-        });
+        socket.broadcast.to(page).emit('cursorMove', { userId: socket.id, x, y, emoji, chatMessage, chatActive });
     });
 
     socket.on('disconnect', () => {
