@@ -51,25 +51,17 @@ io.on('connection', (socket) => {
     });
 
     socket.on('cursorMove', (data) => {
-        const { x, y } = data;
+        const { x, y, emoji, chatMessage, chatActive } = data;
         const page = userPages[socket.id];  // Get page of sender
         // Broadcast to all other users on the same page
-        socket.broadcast.to(page).emit('cursorMove', { userId: socket.id, x, y });
+        socket.broadcast.to(page).emit('cursorMove', { userId: socket.id, x, y, emoji, chatMessage, chatActive });
     });
 
-    socket.on('chatToggle', (data) => {
-        const { chatActive } = data;
-        const page = userPages[socket.id];  // Get page of sender
-        // Broadcast to all other users on the same page
-        socket.broadcast.to(page).emit('chatToggle', { userId: socket.id, chatActive });
-    });
-
-    socket.on('sendMessage', (data) => {
-        const { chatMessage } = data;
-        const cleanMessage = filter.clean(chatMessage);  // Filter out bad words from chatMessage
-        const page = userPages[socket.id];  // Get page of sender
-        // Broadcast to all other users on the same page
-        socket.broadcast.to(page).emit('newMessage', { userId: socket.id, chatMessage: cleanMessage });
+    socket.on('newMessage', (data) => {
+        const cleanMessage = filter.clean(data.message);  // Filter out bad words
+        // Log the message for auditing purposes
+        console.log(`${socket.id} sent: ${cleanMessage}`);
+        // ... rest of your code to handle the message
     });
 
     socket.on('disconnect', () => {
