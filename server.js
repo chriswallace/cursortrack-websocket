@@ -1,12 +1,12 @@
 const express = require('express');
-const http = require('http');
+const https = require('https');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const Filter = require('bad-words');
 
 const app = express();
-const server = http.createServer(app);
+const server = https.createServer(app);
 const io = socketIo(server, {
     cors: {
         origin: "*",  // Allow one origin
